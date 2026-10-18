@@ -298,7 +298,21 @@ addEventListener("resize",()=>{size();if(still)frame()});size();frame();
 const lc=$("lat"),lx=lc.getContext("2d");
 let LW=1,LH=1,lm=null,lt=0;
 function lsize(){const d=devicePixelRatio||1;LW=innerWidth;LH=innerHeight;lc.width=LW*d;lc.height=LH*d;lx.setTransform(d,0,0,d,0,0)}
+function cdraw(){
+  const cs=getComputedStyle(de),ink=cs.getPropertyValue("--ink").trim(),brass=cs.getPropertyValue("--brass").trim();
+  const n=220,R=Math.min(LW,LH)*.46,ox=LW/2,oy=LH/2;
+  const m=21-19*Math.cos(lt*.5)+(lm?(lm[0]/LW-.5)*4:0);
+  const pt=k=>{const a=2*Math.PI*k/n-Math.PI/2;return[ox+R*Math.cos(a),oy+R*Math.sin(a)]};
+  lx.clearRect(0,0,LW,LH);
+  lx.strokeStyle=ink;lx.globalAlpha=.13;lx.lineWidth=.8;lx.beginPath();
+  for(let i=0;i<n;i++){const a=pt(i),b=pt((i*m)%n);lx.moveTo(a[0],a[1]);lx.lineTo(b[0],b[1])}
+  lx.stroke();
+  lx.strokeStyle=brass;lx.globalAlpha=.35;lx.lineWidth=1.2;lx.beginPath();lx.arc(ox,oy,R,0,7);lx.stroke();
+  lx.fillStyle=brass;lx.globalAlpha=.5;lx.font="italic 500 16px 'Cormorant Garamond',serif";
+  lx.fillText("k → "+m.toFixed(2)+"·k  (mod "+n+")",24,LH-24);
+  lx.globalAlpha=1}
 function ldraw(){
+  if(de.dataset.theme!=="dark"){cdraw();return}
   const cs=getComputedStyle(de),ink=cs.getPropertyValue("--ink").trim(),brass=cs.getPropertyValue("--brass").trim();
   const th=.38+Math.sin(lt)*.07,s=46,b1=[s*Math.cos(th),s*Math.sin(th)],b2=[-16+Math.sin(lt*.7)*6,42];
   const ox=LW/2,oy=LH/2,N=Math.ceil(Math.hypot(LW,LH)/70)+2;
