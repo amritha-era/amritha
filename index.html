@@ -99,7 +99,7 @@ footer{padding:2.5rem 1.5rem 3.5rem;color:var(--muted);font-size:.88rem;border-t
   nav ul{display:none}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
-#lat{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+#lat{display:none}
 .soon{font:italic 400 1.4rem "Cormorant Garamond",serif;color:var(--muted);margin:0}
 .rsa .lede{margin:0 0 1.4rem;color:var(--muted);max-width:38rem}
 .fields{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1.4rem}
@@ -115,6 +115,7 @@ footer{padding:2.5rem 1.5rem 3.5rem;color:var(--muted);font-size:.88rem;border-t
 .tw th,.tw td{text-align:left;padding:.45rem .9rem;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
 .tw th{font-size:.88rem;font-weight:600;color:var(--muted)}
 :root:not([data-theme=dark]) body{background-image:radial-gradient(70rem 42rem at 90% -8%,#9db9ec,transparent 72%),radial-gradient(52rem 32rem at -5% 30%,#b6caef,transparent 70%);background-attachment:fixed}  
+:root[data-theme=dark] body{background-image:radial-gradient(60rem 36rem at 92% -10%,#7a5c1e,transparent 70%),radial-gradient(56rem 34rem at -5% 35%,#1b3578,transparent 70%);background-attachment:fixed}
 </style>
 </head>
 <body>
@@ -337,7 +338,7 @@ document.addEventListener("pointermove",e=>{lm=[e.clientX,e.clientY];if(still)ld
 de.addEventListener("pointerleave",()=>{lm=null;if(still)ldraw()});
 addEventListener("resize",()=>{lsize();if(still)ldraw()});
 btn.addEventListener("click",()=>{if(still)ldraw()});
-lsize();still?ldraw():lloop();
+lsize();
 })();
 </script>
 </body>
