@@ -114,6 +114,7 @@ footer{padding:2.5rem 1.5rem 3.5rem;color:var(--muted);font-size:.88rem;border-t
 .tw table{border-collapse:collapse;min-width:20rem;width:100%;max-width:34rem}
 .tw th,.tw td{text-align:left;padding:.45rem .9rem;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
 .tw th{font-size:.88rem;font-weight:600;color:var(--muted)}
+:root:not([data-theme=dark]) body{background-image:radial-gradient(60rem 32rem at 90% -8%,#e2e9f7,transparent 70%);background-attachment:fixed}  
 </style>
 </head>
 <body>
@@ -312,7 +313,7 @@ function cdraw(){
   lx.fillText("k → "+m.toFixed(2)+"·k  (mod "+n+")",24,LH-24);
   lx.globalAlpha=1}
 function ldraw(){
-  if(de.dataset.theme!=="dark"){cdraw();return}
+if(de.dataset.theme!=="dark"){lx.clearRect(0,0,LW,LH);return}
   const cs=getComputedStyle(de),ink=cs.getPropertyValue("--ink").trim(),brass=cs.getPropertyValue("--brass").trim();
   const th=.38+Math.sin(lt)*.07,s=46,b1=[s*Math.cos(th),s*Math.sin(th)],b2=[-16+Math.sin(lt*.7)*6,42];
   const ox=LW/2,oy=LH/2,N=Math.ceil(Math.hypot(LW,LH)/70)+2;
