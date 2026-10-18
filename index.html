@@ -8,6 +8,7 @@
 <meta property="og:title" content="Amritha Pradeep">
 <meta property="og:description" content="M.Sc. Mathematics at IIT Madras. Cryptography, algebraic number theory, coding theory.">
 <meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231b2f5b'/%3E%3Ctext x='32' y='43' font-family='Georgia,serif' font-size='30' font-style='italic' text-anchor='middle' fill='%23d6b26a'%3EAP%3C/text%3E%3C/svg%3E">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Amritha Pradeep","affiliation":{"@type":"CollegeOrUniversity","name":"Indian Institute of Technology Madras"},"knowsAbout":["Cryptography","Algebraic number theory","Coding theory"]}</script>
 <script>try{var t=localStorage.getItem("theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.dataset.theme=t}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -98,10 +99,26 @@ footer{padding:2.5rem 1.5rem 3.5rem;color:var(--muted);font-size:.88rem;border-t
   nav ul{display:none}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+#lat{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none}
+.soon{font:italic 400 1.4rem "Cormorant Garamond",serif;color:var(--muted);margin:0}
+.rsa .lede{margin:0 0 1.4rem;color:var(--muted);max-width:38rem}
+.fields{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1.4rem}
+.fields label{display:grid;gap:.3rem;font-size:.9rem;color:var(--muted)}
+.fields input{font:inherit;color:var(--fg);background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:.4rem .7rem;width:6.5rem}
+.fields .wide input{width:14rem;letter-spacing:.12em;text-transform:uppercase}
+.fields input:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.keys{display:grid;gap:.25rem;margin-bottom:1.2rem;padding:1rem 1.2rem;border-left:2px solid var(--brass);background:var(--soft)}
+.keys:empty{display:none}
+.keys p{margin:0;font-size:.98rem}
+.tw{overflow-x:auto}
+.tw table{border-collapse:collapse;min-width:20rem;width:100%;max-width:34rem}
+.tw th,.tw td{text-align:left;padding:.45rem .9rem;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.tw th{font-size:.88rem;font-weight:600;color:var(--muted)}
 </style>
 </head>
 <body>
 <div id="bar" aria-hidden="true"></div>
+<canvas id="lat" aria-hidden="true"></canvas> 
 <a class="skip" href="#main">Skip to content</a>
 <header class="top"><nav aria-label="Main"><a class="brand" href="#top">Amritha Pradeep</a><ul id="nav"></ul>
 <button id="theme" type="button" aria-label="Switch to dark mode">Dark</button></nav></header>
@@ -180,6 +197,37 @@ document.title=S.name+" · Mathematics, IIT Madras";
 $("name").textContent=S.name;$("tagline").textContent=S.tagline;
 S.interests.forEach(i=>$("chips").append(h("li",{},i.name)));
 
+function buildRSA(){
+  const gcd=(a,b)=>b?gcd(b,a%b):a;
+  const pw=(a,e,m)=>{let r=1;a%=m;while(e>0){if(e&1)r=r*a%m;a=a*a%m;e>>=1}return r};
+  const inv=(e,m)=>{let a=e,b=m,x=1,y=0;while(b){const q=Math.floor(a/b);[a,b]=[b,a-q*b];[x,y]=[y,x-q*y]}return((x%m)+m)%m};
+  const prime=n=>{if(!Number.isInteger(n)||n<2)return false;for(let d=2;d*d<=n;d++)if(n%d===0)return false;return true};
+  const w=h("div",{class:"rsa"});
+  w.innerHTML='<p class="lede">A toy version of RSA encryption. Choose two small primes and a short message, then watch each letter be encrypted and decrypted. Real systems use primes with hundreds of digits, because small ones are broken instantly by factoring n.</p>'+
+  '<div class="fields"><label>Prime <i>p</i><input id="rp" type="number" value="11" min="2" max="199"></label><label>Prime <i>q</i><input id="rq" type="number" value="13" min="2" max="199"></label><label class="wide">Message (letters A–Z)<input id="rm" type="text" value="HELLO" maxlength="12" autocomplete="off" spellcheck="false"></label></div>'+
+  '<div id="rk" class="keys" aria-live="polite"></div><div class="tw"><table id="rt"></table></div><p id="rn" class="meta" aria-live="polite"></p>';
+  const qs=s=>w.querySelector(s),keys=qs("#rk"),tb=qs("#rt"),note=qs("#rn");
+  function run(){
+    const p=+qs("#rp").value,q=+qs("#rq").value,msg=qs("#rm").value.toUpperCase().replace(/[^A-Z]/g,"");
+    keys.replaceChildren();tb.replaceChildren();note.textContent="";
+    if(!prime(p)||!prime(q)){note.textContent="Both p and q must be prime (for example 11, 13, 17, 19, 23, 29).";return}
+    if(p===q){note.textContent="Choose two different primes.";return}
+    const n=p*q,phi=(p-1)*(q-1);
+    if(n<=26){note.textContent="Choose larger primes so that p × q is greater than 26.";return}
+    let e=3;while(gcd(e,phi)!==1)e+=2;
+    const d=inv(e,phi);
+    ["n = p × q = "+n,"φ(n) = (p − 1)(q − 1) = "+phi,"Public key (n, e) = ("+n+", "+e+")","Private key d = "+d+", since e · d ≡ 1 (mod "+phi+")"].forEach(s=>keys.append(h("p",{},s)));
+    if(!msg){note.textContent="Type a message using the letters A–Z.";return}
+    tb.append(h("thead",{},h("tr",{},["Letter","m","c = mᵉ mod n","Decrypts to"].map(t=>h("th",{scope:"col"},t)))));
+    const body=h("tbody",{}),cs=[];
+    for(const ch of msg){const m=ch.charCodeAt(0)-64,c=pw(m,e,n),back=pw(c,d,n);cs.push(c);
+      body.append(h("tr",{},[ch,m,c,String.fromCharCode(back+64)+" ("+back+")"].map(v=>h("td",{},String(v)))))}
+    tb.append(body);
+    note.textContent="Ciphertext: "+cs.join(" ")+". Decrypting each number with d recovers the original letters (A = 1, B = 2, and so on).";
+  }
+  ["#rp","#rq","#rm"].forEach(s=>qs(s).addEventListener("input",run));run();
+  return w;
+}
 const secs=[
 ["about","About",()=>h("div",{class:"about"},S.about.map(p=>h("p",{},p)))],
 ["research","Research",()=>[
@@ -197,7 +245,8 @@ const secs=[
   ...S.courses.map(g=>h("div",{class:"item"},h("p",{class:"t"},g.group),h("ul",{class:"plain"},g.items.map(i=>h("li",{},i))))),
   h("p",{},h("strong",{},"Technical skills: "),S.skills),
   h("p",{},h("strong",{},"Languages: "),S.languages)]],
-["notes","Notes",()=>S.notes.map(n=>h("p",{},n.url?link(n.url,n.title):n.title,n.date?" ("+n.date+")":"")),S.notes.length],
+["playground","Playground",()=>buildRSA()],
+["notes","Notes",()=>S.notes.length?S.notes.map(n=>h("p",{},n.url?link(n.url,n.title):n.title,n.date?" ("+n.date+")":"")):h("p",{class:"soon"},"Mathematical notes will be updated soon."),1],
 ["publications","Publications",()=>S.publications.map(p=>h("p",{},p.url?link(p.url,p.title):p.title,[p.venue,p.year].filter(Boolean).length?", "+[p.venue,p.year].filter(Boolean).join(", "):"")),S.publications.length],
 ["cv","CV",()=>h("p",{},h("a",{class:"btn",href:S.cv,download:""},"Download CV (PDF)"))],
 ["contact","Contact",()=>[
@@ -207,7 +256,7 @@ const secs=[
 ];
 const nav=$("nav"),root=$("sections");
 secs.forEach(([id,title,build,show])=>{if(show===0)return;
-  if(["about","research","education","programs","contact"].includes(id))nav.append(h("li",{},h("a",{href:"#"+id},title)));
+  if(["about","research","education","programs","playground","notes","contact"],"research","education","programs","playground","notes","contact".includes(id))nav.append(h("li",{},h("a",{href:"#"+id},title)));
   root.append(h("section",{class:"s",id},h("h2",{},title),h("div",{class:"body"},build())))});
 $("foot").textContent="© "+new Date().getFullYear()+" "+S.name+". Mathematics, IIT Madras.";
 
@@ -245,6 +294,35 @@ function pos(e){const r=cv.getBoundingClientRect();mp=[e.clientX-r.left,e.client
 cv.addEventListener("pointermove",pos);cv.addEventListener("pointerleave",()=>{mp=null;if(still)frame()});
 btn.addEventListener("click",()=>{if(still)frame()});
 addEventListener("resize",()=>{size();if(still)frame()});size();frame();
+// lattice background
+const lc=$("lat"),lx=lc.getContext("2d");
+let LW=1,LH=1,lm=null,lt=0;
+function lsize(){const d=devicePixelRatio||1;LW=innerWidth;LH=innerHeight;lc.width=LW*d;lc.height=LH*d;lx.setTransform(d,0,0,d,0,0)}
+function ldraw(){
+  const cs=getComputedStyle(de),ink=cs.getPropertyValue("--ink").trim(),brass=cs.getPropertyValue("--brass").trim();
+  const th=.38+Math.sin(lt)*.07,s=46,b1=[s*Math.cos(th),s*Math.sin(th)],b2=[-16+Math.sin(lt*.7)*6,42];
+  const ox=LW/2,oy=LH/2,N=Math.ceil(Math.hypot(LW,LH)/70)+2;
+  lx.clearRect(0,0,LW,LH);lx.fillStyle=ink;
+  for(let i=-N;i<=N;i++)for(let j=-N;j<=N;j++){
+    let x=ox+i*b1[0]+j*b2[0],y=oy+i*b1[1]+j*b2[1];
+    if(x<-20||x>LW+20||y<-20||y>LH+20)continue;
+    let r=1.3,al=.22;
+    if(lm){const dx=lm[0]-x,dy=lm[1]-y,dd=Math.hypot(dx,dy);if(dd<150){const k=1-dd/150;x+=dx*k*.22;y+=dy*k*.22;r=1.3+k*2.2;al=.22+k*.5}}
+    lx.globalAlpha=al;lx.beginPath();lx.arc(x,y,r,0,7);lx.fill()}
+  if(lm){
+    const det=b1[0]*b2[1]-b1[1]*b2[0],px=lm[0]-ox,py=lm[1]-oy,
+      u=(px*b2[1]-py*b2[0])/det,v=(b1[0]*py-b1[1]*px)/det,i=Math.floor(u),j=Math.floor(v),
+      q=(a,b)=>[ox+a*b1[0]+b*b2[0],oy+a*b1[1]+b*b2[1]],P=[q(i,j),q(i+1,j),q(i+1,j+1),q(i,j+1)];
+    lx.beginPath();P.forEach((p,k)=>k?lx.lineTo(p[0],p[1]):lx.moveTo(p[0],p[1]));lx.closePath();
+    lx.globalAlpha=.1;lx.fillStyle=brass;lx.fill();
+    lx.globalAlpha=.7;lx.strokeStyle=brass;lx.lineWidth=1;lx.stroke()}
+  lx.globalAlpha=1}
+function lloop(){lt+=.004;ldraw();requestAnimationFrame(lloop)}
+document.addEventListener("pointermove",e=>{lm=[e.clientX,e.clientY];if(still)ldraw()});
+de.addEventListener("pointerleave",()=>{lm=null;if(still)ldraw()});
+addEventListener("resize",()=>{lsize();if(still)ldraw()});
+btn.addEventListener("click",()=>{if(still)ldraw()});
+lsize();still?ldraw():lloop();
 })();
 </script>
 </body>
